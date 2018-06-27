@@ -1,7 +1,14 @@
 import React, {Component} from 'react';
+import {
+  FeatureFlagHelper,
+  IFeature,
+  TFeatures,
+  IFeatureSource,
+  TFetcher,
+  TTransformer,
+} from 'feature-helper';
 import JSXFeatures from './components/JSXFeatures';
 import TSXFeatures from './components/TSXFeatures';
-import {FeatureFlagHelper} from '../lib/feature-helper/';
 
 interface IComplexFeaturesProps {
   lovesTypeScript: boolean;
@@ -22,7 +29,7 @@ export default class ComplexFeatures extends Component<IComplexFeaturesProps, IC
   }
 
   componentWillMount() {
-    const source = {
+    const source: IFeatureSource<ComplexFeature[]> = {
       sourceName: 'complexSource',
       fetcher: complexSourceFetcher,
       transformer: complexSourceTransformer,
@@ -52,24 +59,27 @@ export default class ComplexFeatures extends Component<IComplexFeaturesProps, IC
 }
 
 type ComplexFeature = { name: string, value: any };
-const complexSourceFetcher = (): Promise<Array<ComplexFeature>> => {
-  return new Promise((resolve) => resolve([
-    {
-      name: 'featureB',
-      value: false
-    },
-    {
-      name: 'featureD',
-      value: false
-    }
-  ]));
+const complexSourceFetcher: TFetcher<ComplexFeature[]> = (): Promise<ComplexFeature[]> => {
+  return new Promise((resolve) => {
+    resolve([
+      {
+        name: 'featureA',
+        value: true
+      },
+      {
+        name: 'featureB',
+        value: false,
+      }
+    ] as ComplexFeature[]);
+  })
 };
 
-const complexSourceTransformer = (response: ComplexFeature[]): any => {
+const complexSourceTransformer: TTransformer<ComplexFeature[]> = (response: ComplexFeature[]): TFeatures => {
   return response.map((f: ComplexFeature) => {
     return {
-      ...f,
+      name: f.name,
+      value: f.value,
       source: 'complexSource'
-    };
-  });
+    } as IFeature;
+  })
 };

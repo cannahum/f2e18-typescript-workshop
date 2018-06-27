@@ -1,6 +1,7 @@
 import React from 'React';
-import {FeatureFlagHelper} from '../../lib/feature-helper/';
-const ffh: any = FeatureFlagHelper.getInstance();
+import {FeatureFlagHelper, FeatureFlagResult} from 'feature-helper';
+
+const ffh: FeatureFlagHelper = FeatureFlagHelper.getInstance();
 
 interface IFeatureProps {
   firstName: string;
@@ -14,8 +15,8 @@ export default class TSXFeatures extends React.Component<IFeatureProps> {
   render() {
     const {firstName, lovesTypeScript, flagsAreFetched, specificSource} = this.props;
     const getFeatureComponent = (name: string): JSX.Element => {
-      const isOpen: boolean = ffh.isFeaturePublished(name, specificSource);
-      if (isOpen) {
+      const isOpen: FeatureFlagResult | false = ffh.isFeaturePublished(name, specificSource);
+      if (isOpen && isOpen.asBoolean()) {
         return <p style={{backgroundColor: '#00800085'}}>{name}</p>
       }
       return <p style={{backgroundColor: '#ff000075'}}>{name}</p>

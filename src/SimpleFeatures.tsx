@@ -1,7 +1,11 @@
 import React, {Component} from 'react';
+import {
+  FeatureFlagHelper,
+  IFeatureSource,
+  TFetcher,
+} from 'feature-helper';
 import JSXFeatures from './components/JSXFeatures';
 import TSXFeatures from './components/TSXFeatures';
-import {FeatureFlagHelper} from '../lib/feature-helper/';
 
 interface ISimpleFeaturesProps {
   lovesTypeScript: boolean;
@@ -22,11 +26,11 @@ export default class SimpleFeatures extends Component<ISimpleFeaturesProps, ISim
   }
 
   componentWillMount() {
-    const source = {
+    const source: IFeatureSource<Array<string>> = {
       sourceName: 'pureString',
       fetcher: pureStringFetcher,
     };
-    const ffh: any = FeatureFlagHelper.getInstance();
+    const ffh: FeatureFlagHelper = FeatureFlagHelper.getInstance();
     ffh.addFeatureSource(source);
     ffh.fetchSources()
       .then(() => {
@@ -50,7 +54,7 @@ export default class SimpleFeatures extends Component<ISimpleFeaturesProps, ISim
   }
 }
 
-const pureStringFetcher = (): Promise<Array<string>> => {
+const pureStringFetcher: TFetcher<Array<string>> = (): Promise<Array<string>> => {
   return new Promise((resolve) => resolve([
     'featureA',
     'featureB',
