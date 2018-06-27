@@ -3,17 +3,17 @@ import JSXFeatures from './components/JSXFeatures';
 import TSXFeatures from './components/TSXFeatures';
 import {FeatureFlagHelper} from '../lib/feature-helper/';
 
-interface ISimpleFeaturesProps {
+interface IComplexFeaturesProps {
   lovesTypeScript: boolean;
 }
 
-interface ISimpleFeaturesState {
+interface IComplexFeaturesState {
   isFetched: boolean;
 }
 
-export default class SimpleFeatures extends Component<ISimpleFeaturesProps, ISimpleFeaturesState> {
+export default class ComplexFeatures extends Component<IComplexFeaturesProps, IComplexFeaturesState> {
 
-  constructor(props: ISimpleFeaturesProps) {
+  constructor(props: IComplexFeaturesProps) {
     super(props);
 
     this.state = {
@@ -23,8 +23,9 @@ export default class SimpleFeatures extends Component<ISimpleFeaturesProps, ISim
 
   componentWillMount() {
     const source = {
-      sourceName: 'pureString',
-      fetcher: pureStringFetcher,
+      sourceName: 'complexSource',
+      fetcher: complexSourceFetcher,
+      transformer: complexSourceTransformer,
     };
     const ffh: any = FeatureFlagHelper.getInstance();
     ffh.addFeatureSource(source);
@@ -43,17 +44,32 @@ export default class SimpleFeatures extends Component<ISimpleFeaturesProps, ISim
           firstName={'Jon'}
           lovesTypeScript={this.props.lovesTypeScript}
           flagsAreFetched={this.state.isFetched}
-          specificSource="pureString"/>
+          specificSource="complexSource"/>
         <JSXFeatures/>
       </div>
     );
   }
 }
 
-const pureStringFetcher = (): Promise<Array<string>> => {
+type ComplexFeature = { name: string, value: any };
+const complexSourceFetcher = (): Promise<Array<ComplexFeature>> => {
   return new Promise((resolve) => resolve([
-    'featureA',
-    'featureB',
-    'featureC',
+    {
+      name: 'featureB',
+      value: false
+    },
+    {
+      name: 'featureD',
+      value: false
+    }
   ]));
+};
+
+const complexSourceTransformer = (response: ComplexFeature[]): any => {
+  return response.map((f: ComplexFeature) => {
+    return {
+      ...f,
+      source: 'complexSource'
+    };
+  });
 };

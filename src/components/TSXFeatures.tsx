@@ -6,14 +6,15 @@ interface IFeatureProps {
   firstName: string;
   lovesTypeScript: boolean;
   flagsAreFetched: boolean;
+  specificSource?: string;
 }
 
 export default class TSXFeatures extends React.Component<IFeatureProps> {
 
   render() {
-    const {firstName, lovesTypeScript, flagsAreFetched} = this.props;
+    const {firstName, lovesTypeScript, flagsAreFetched, specificSource} = this.props;
     const getFeatureComponent = (name: string): JSX.Element => {
-      const isOpen: boolean = ffh.isFeaturePublished(name);
+      const isOpen: boolean = ffh.isFeaturePublished(name, specificSource);
       if (isOpen) {
         return <p style={{backgroundColor: '#00800085'}}>{name}</p>
       }
