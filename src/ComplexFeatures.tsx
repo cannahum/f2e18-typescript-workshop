@@ -1,4 +1,6 @@
+/// <reference path="../server.d.ts" />
 import React, {Component} from 'react';
+import axios, {AxiosResponse} from 'axios';
 import {
   FeatureFlagHelper,
   IFeature,
@@ -34,8 +36,14 @@ export default class ComplexFeatures extends Component<IComplexFeaturesProps, IC
       fetcher: complexSourceFetcher,
       transformer: complexSourceTransformer,
     };
+    const source2: IFeatureSource<Server.IServerFeature[]> = {
+      sourceName: 'serverFlags',
+      fetcher: serverFlagsFetcher,
+      transformer: serverFlagsTransformer,
+    };
     const ffh: any = FeatureFlagHelper.getInstance();
     ffh.addFeatureSource(source);
+    ffh.addFeatureSource(source2);
     ffh.fetchSources()
       .then(() => {
         this.setState({
@@ -52,7 +60,7 @@ export default class ComplexFeatures extends Component<IComplexFeaturesProps, IC
           lovesTypeScript={this.props.lovesTypeScript}
           flagsAreFetched={this.state.isFetched}
           specificSource="complexSource"/>
-        <JSXFeatures/>
+        <JSXFeatures flagsAreFetched={this.state.isFetched}/>
       </div>
     );
   }
@@ -82,4 +90,39 @@ const complexSourceTransformer: TTransformer<ComplexFeature[]> = (response: Comp
       source: 'complexSource'
     } as IFeature;
   })
+};
+
+const serverFlagsFetcher: TFetcher<Server.IServerFeature[]> = async () => {
+  try {
+    const data = await axios.get<AxiosResponse<Server.IServerFeatureEndpoint>>('/featureflags');
+    if (isServerFeatureInterface(data.data.data)) {
+      return data.data.data;
+    }
+  }
+  catch (e) {
+    //
+  }
+  return [];
+};
+
+function isServerFeatureInterface(x: any): x is Server.IServerFeature[] {
+  if (!Array.isArray(x)) {
+    return false;
+  }
+
+  const [first] = x;
+  if (first && first.name && typeof first.name === 'string') {
+    return true;
+  }
+  return false;
+}
+
+const serverFlagsTransformer: TTransformer<Server.IServerFeature[]> = (list: Server.IServerFeature[]): TFeatures => {
+  return list.map((f: Server.IServerFeature) => {
+    return {
+      name: f.name,
+      value: (f.currentValue && f.currentValue === 'true'),
+      source: 'serverFlags',
+    };
+  });
 };
